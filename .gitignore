@@ -1,0 +1,6 @@
+dl/
+openssl/
+sources/
+venv/
+*.exe
+settings.yml
