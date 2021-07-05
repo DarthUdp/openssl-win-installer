@@ -1,5 +1,6 @@
 dl/
 openssl/
+bin/
 sources/
 venv/
 *.exe

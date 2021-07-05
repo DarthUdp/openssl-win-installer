@@ -65,7 +65,7 @@ print("make the installer")
 nsi_path = Path("installer.nsi")
 out = subprocess.run([config.nsis_make_path, nsi_path.absolute()], shell=True, check=True, capture_output=True)
 print(out.stdout.decode())
-installer = Path("curl-openssl-setup.exe").absolute()
+installer = Path("openssl-setup.exe").absolute()
 hash = sha256()
 with open(installer, "rb") as fd:
     hash.update(fd.read())

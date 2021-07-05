@@ -7,12 +7,12 @@
 !include "x64.nsh"
 
 # Settings ---------------------------------
-Name "curl-openssl-windows"
-OutFile "curl-openssl-setup.exe"
+Name "OpenSSL For Windows"
+OutFile "openssl-setup.exe"
 Unicode true
 SetCompressor lzma
 RequestExecutionLevel admin
-InstallDir "$PROGRAMFILES64\curl-openssl"
+InstallDir "$PROGRAMFILES64\openssl"
 
 # Pages ------------------------------------
 !insertmacro MUI_PAGE_WELCOME
@@ -20,7 +20,9 @@ InstallDir "$PROGRAMFILES64\curl-openssl"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
-!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR/openssl/README.txt"
+!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR/README.txt"
+!define MUI_FINISHPAGE_LINK "Star the repository on github :)"
+!define MUI_FINISHPAGE_LINK_LOCATION "https://github.com/DarthUdp/openssl-win-installer"
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_CONFIRM
@@ -32,13 +34,24 @@ InstallDir "$PROGRAMFILES64\curl-openssl"
 
 # Sections ---------------------------------
 Section
+    SetOutPath $INSTDIR\bin
+    File /r openssl\*.*
+    File /r openssl\engines*
+    File /r openssl\include
+    File /r openssl\lib
     SetOutPath $INSTDIR
-    File /r openssl
+    File openssl\*.txt
+    File opensslvars.bat
     WriteUninstaller "$OUTDIR\uninstaller.exe"
+    CreateDirectory "$SMPROGRAMS\openssl"
+    CreateShortcut "$SMPROGRAMS\openssl\OpenSSL Prompt.lnk" "cmd.exe /k $INSTDIR\opensslvars.bat"
+    CreateShortCut "$SMPROGRAMS\openssl\openssl.lnk" $INSTDIR\bin\openssl.exe
 SectionEnd
 
 Section "Uninstall"
     Delete "$INSTDIR/uninstall.exe"
+    Delete "$SMPROGRAMS\openssl\OpenSSL Prompt.lnk"
+    RMDir /r "$SMPROGRAMS\openssl"
     RMDir /r /REBOOTOK "$INSTDIR"
 SectionEnd
 
