@@ -71,4 +71,4 @@ with open(installer, "rb") as fd:
     hash.update(fd.read())
 
 with open(f"{installer.stem}.sha256", "w") as fd:
-    fd.write(f"{installer.stem}{installer.suffix} {hash.hexdigest()}")
+    fd.write(f"{hash.hexdigest()} {installer.stem}{installer.suffix}")

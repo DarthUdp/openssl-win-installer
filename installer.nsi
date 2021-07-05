@@ -1,6 +1,3 @@
-# Generated with generator-nsis
-# https://github.com/idleberg/generator-nsis
-
 # Includes ---------------------------------
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
@@ -13,6 +10,18 @@ Unicode true
 SetCompressor lzma
 RequestExecutionLevel admin
 InstallDir "$PROGRAMFILES64\openssl"
+
+!define APPNAME "OpenSSL for windows"
+!define COMPANYNAME "rzor-io"
+!define DESCRIPTION "OpenSSL for windows made easy"
+!define VERSIONMAJOR 1
+!define VERSIONMINOR 1
+!define VERSIONBUILD 1
+# These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
+# It is possible to use "mailto:" links in here to open the email client
+!define HELPURL "https://github.com/DarthUdp/openssl-win-installer/issues" # "Support Information" link
+!define UPDATEURL "https://github.com/DarthUdp/openssl-win-installer/releases" # "Product Updates" link
+!define ABOUTURL "https://github.com/DarthUdp/openssl-win-installer" # "Publisher" link
 
 # Pages ------------------------------------
 !insertmacro MUI_PAGE_WELCOME
@@ -42,9 +51,26 @@ Section
     SetOutPath $INSTDIR
     File openssl\*.txt
     File opensslvars.bat
-    WriteUninstaller "$OUTDIR\uninstaller.exe"
+
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayName" "${APPNAME} - ${DESCRIPTION}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "InstallLocation" "$\"$INSTDIR$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayIcon" "$\"$INSTDIR\logo.ico$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "Publisher" "$\"${COMPANYNAME}$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "HelpLink" "$\"${HELPURL}$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "URLUpdateInfo" "$\"${UPDATEURL}$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "URLInfoAbout" "$\"${ABOUTURL}$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "DisplayVersion" "$\"${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}$\""
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "VersionMajor" ${VERSIONMAJOR}
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "VersionMinor" ${VERSIONMINOR}
+	# There is no option for modifying or repairing the install
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "NoModify" 1
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}" "NoRepair" 1
+
+    WriteUninstaller "$OUTDIR\uninstall.exe"
     CreateDirectory "$SMPROGRAMS\openssl"
-    CreateShortcut "$SMPROGRAMS\openssl\OpenSSL Prompt.lnk" "cmd.exe /k $INSTDIR\opensslvars.bat"
+    CreateShortcut "$SMPROGRAMS\openssl\OpenSSL Prompt.lnk" 'cmd.exe /k "$INSTDIR\opensslvars.bat"'
     CreateShortCut "$SMPROGRAMS\openssl\openssl.lnk" $INSTDIR\bin\openssl.exe
 SectionEnd
 
@@ -53,7 +79,22 @@ Section "Uninstall"
     Delete "$SMPROGRAMS\openssl\OpenSSL Prompt.lnk"
     RMDir /r "$SMPROGRAMS\openssl"
     RMDir /r /REBOOTOK "$INSTDIR"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME} ${APPNAME}"
 SectionEnd
 
 
 # Functions --------------------------------
+!macro VerifyUserIsAdmin
+UserInfo::GetAccountType
+pop $0
+${If} $0 != "admin" ;Require admin rights on NT4+
+        messageBox mb_iconstop "Administrator rights required!"
+        setErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
+        quit
+${EndIf}
+!macroend
+
+function .onInit
+	setShellVarContext all
+	!insertmacro VerifyUserIsAdmin
+functionEnd
